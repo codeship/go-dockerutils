@@ -74,6 +74,10 @@ func NewDockerClientFromEnv(apiVersion string) (*docker.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	return NewDockerClient(dockerEnvironment, apiVersion)
+}
+
+func NewDockerClient(dockerEnvironment *DockerEnvironment, apiVersion string) (*docker.Client, error) {
 	dockerHost := dockerEnvironment.DockerHost
 	if dockerEnvironment.IsDockerTls() {
 		parts := strings.SplitN(dockerHost, "://", 2)
@@ -82,31 +86,21 @@ func NewDockerClientFromEnv(apiVersion string) (*docker.Client, error) {
 		}
 		dockerHost = fmt.Sprintf("https://%s", parts[1])
 		dockerCertPath := dockerEnvironment.DockerCertPath
+		cert := filepath.Join(dockerCertPath, "cert.pem")
+		key := filepath.Join(dockerCertPath, "key.pem")
+		ca := filepath.Join(dockerCertPath, "ca.pem")
 		if err := checkFileExists(dockerCertPath); err != nil {
 			return nil, err
 		}
-		cert := filepath.Join(dockerCertPath, "cert.pem")
 		if err := checkFileExists(cert); err != nil {
 			return nil, err
 		}
-		key := filepath.Join(dockerCertPath, "key.pem")
 		if err := checkFileExists(key); err != nil {
 			return nil, err
 		}
-		ca := filepath.Join(dockerCertPath, "ca.pem")
 		if err := checkFileExists(ca); err != nil {
 			return nil, err
 		}
-		return NewDockerClient(dockerHost, true, dockerCertPath, apiVersion)
-	}
-	return NewDockerClient(dockerEnvironment.DockerHost, false, "", apiVersion)
-}
-
-func NewDockerClient(dockerHost string, dockerTlsVerify bool, dockerCertPath string, apiVersion string) (*docker.Client, error) {
-	if dockerTlsVerify {
-		cert := filepath.Join(dockerCertPath, "cert.pem")
-		key := filepath.Join(dockerCertPath, "key.pem")
-		ca := filepath.Join(dockerCertPath, "ca.pem")
 		return docker.NewVersionedTLSClient(dockerHost, cert, key, ca, apiVersion)
 	}
 	return docker.NewVersionedClient(dockerHost, apiVersion)
