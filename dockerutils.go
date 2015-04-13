@@ -21,11 +21,17 @@ func (this *DockerEnvironment) IsDockerTls() bool {
 }
 
 func (this *DockerEnvironment) EnvStrings() []string {
-	return []string{
+	envStrings := []string{
 		fmt.Sprintf("DOCKER_HOST=%s", this.DockerHost),
-		fmt.Sprintf("DOCKER_TLS_VERIFY=%s", this.DockerTlsVerify),
-		fmt.Sprintf("DOCKER_CERT_PATH=%s", this.DockerCertPath),
 	}
+	if this.IsDockerTls() {
+		envStrings = append(
+			envStrings,
+			fmt.Sprintf("DOCKER_TLS_VERIFY=%s", this.DockerTlsVerify),
+			fmt.Sprintf("DOCKER_CERT_PATH=%s", this.DockerCertPath),
+		)
+	}
+	return envStrings
 }
 
 func (this *DockerEnvironment) HostVolumeToVolume() map[string]string {
