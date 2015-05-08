@@ -49,7 +49,7 @@ func (this *DockerEnvironment) HostVolumeToVolume() map[string]string {
 func GetDockerEnvironment() (*DockerEnvironment, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	if dockerHost == "" {
-		return nil, errors.New("dockerutils: environment variable DOCKER_HOST must be set")
+		dockerHost = "unix:///var/run/docker.sock"
 	}
 	dockerTlsVerify := os.Getenv("DOCKER_TLS_VERIFY")
 	var dockerCertPath string
