@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/fsouza/go-dockerclient"
@@ -113,19 +114,40 @@ func NewDockerClient(dockerEnvironment *DockerEnvironment, apiVersion string) (*
 }
 
 func IsDockerTls(dockerTlsVerify string) bool {
-	// TODO(pedge): is any non-empty value legal? any non-zero value?
-	return dockerTlsVerify == "1"
+	return dockerTlsVerify != ""
 }
 
-func DockerExposedPorts(expose []uint16) map[docker.Port]struct{} {
-	if expose == nil || len(expose) == 0 {
-		return nil
+func DockerPorts(expose []uint16, ports []string) (map[docker.Port]struct{}, map[docker.Port][]docker.PortBinding, error) {
+	if (expose == nil || len(expose) == 0) && (ports == nil || len(ports) == 0) {
+		return nil, nil, nil
 	}
 	m := make(map[docker.Port]struct{})
+	n := make(map[docker.Port][]docker.PortBinding)
 	for _, port := range expose {
 		m[docker.Port(fmt.Sprintf("%v/tcp", port))] = emptyStruct()
 	}
-	return m
+	for _, port := range ports {
+		split := strings.Split(port, ":")
+		if len(split) != 2 {
+			return nil, nil, fmt.Errorf("invalid port: %s", port)
+		}
+		hostPort, err := strconv.ParseInt(split[0], 10, 64)
+		if err != nil {
+			return nil, nil, err
+		}
+		containerPort, err := strconv.ParseInt(split[1], 10, 64)
+		if err != nil {
+			return nil, nil, err
+		}
+		dockerPort := docker.Port(fmt.Sprintf("%v/tcp", containerPort))
+		m[dockerPort] = emptyStruct()
+		n[dockerPort] = []docker.PortBinding{
+			docker.PortBinding{
+				HostPort: fmt.Sprintf("%d", hostPort),
+			},
+		}
+	}
+	return m, n, nil
 }
 
 func DockerVolumes(volumes []string) map[string]struct{} {
