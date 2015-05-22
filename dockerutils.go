@@ -36,12 +36,17 @@ func (this *DockerEnvironment) EnvStrings() []string {
 }
 
 func (this *DockerEnvironment) HostVolumeToVolume() map[string]string {
-	if !this.IsDockerTls() || this.DockerCertPath == "" {
+	hostVolumeToVolume := make(map[string]string)
+	if this.IsDockerTls() && this.DockerCertPath != "" {
+		hostVolumeToVolume[this.DockerCertPath] = this.DockerCertPath
+	}
+	if strings.HasPrefix(this.DockerHost, "unix") {
+		hostVolumeToVolume[this.DockerHost] = this.DockerHost
+	}
+	if len(hostVolumeToVolume) == 0 {
 		return nil
 	}
-	return map[string]string{
-		this.DockerCertPath: this.DockerCertPath,
-	}
+	return hostVolumeToVolume
 }
 
 // TODO(pedge): we are assuming the DOCKER_CERT_PATH is a directory within the host
