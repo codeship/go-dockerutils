@@ -2,6 +2,7 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/peter-edge/go-dockerutils/blob/master/LICENSE)
 
 ## Installation
+
 ```bash
 go get -u github.com/peter-edge/go-dockerutils
 ```
@@ -13,6 +14,7 @@ import (
 )
 ```
 
+## Usage
 
 #### func  DockerBinds
 

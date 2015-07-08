@@ -1,29 +1,19 @@
 .PHONY: \
 	all \
-	precommit \
-	check_for_jet \
 	deps \
 	updatedeps \
 	testdeps \
 	updatetestdeps \
-	generate \
 	build \
-	install \
-	cov \
+	lint \
+	vet \
+	errcheck \
+	pretest \
 	test \
-	jetsteps \
-	doc \
+	cov \
 	clean
 
-all: test install
-
-precommit: doc
-
-check_for_jet:
-	@ if ! which jet > /dev/null; then \
-		echo "error: jet not installed" >&2; \
-		exit 1; \
-	  fi
+all: test
 
 deps:
 	go get -d -v ./...
@@ -31,35 +21,36 @@ deps:
 updatedeps:
 	go get -d -v -u -f ./...
 
-testdeps: deps
+testdeps:
 	go get -d -v -t ./...
 
-updatetestdeps: updatedeps
+updatetestdeps:
 	go get -d -v -t -u -f ./...
 
-generate:
-	go generate ./...
-
-build: deps generate
+build: deps
 	go build ./...
 
-install: deps generate
-	go install ./...
+lint: testdeps
+	go get -v github.com/golang/lint/golint
+	golint ./.
 
-cov: testdeps generate
-	go get -v github.com/axw/gocov/gocov
-	gocov test | gocov report
+vet: testdeps
+	go get -v golang.org/x/tools/cmd/vet
+	go vet ./...
 
-test: testdeps generate
+errcheck: testdeps
+	go get -v github.com/kisielk/errcheck
+	errcheck ./...
+
+pretest: lint vet errcheck
+
+test: testdeps pretest
 	go test -test.v ./...
 
-jetsteps: check_for_jet generate
-	jet steps
-
-doc: generate
-	go get -v github.com/robertkrimen/godocdown/godocdown
-	cp .readme.header README.md
-	godocdown | tail -n +7 >> README.md
+cov: testdeps
+	go get -v github.com/axw/gocov/gocov
+	go get golang.org/x/tools/cmd/cover
+	gocov test | gocov report
 
 clean:
 	go clean -i ./...

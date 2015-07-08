@@ -17,31 +17,31 @@ type DockerEnvironment struct {
 	DockerCertPath  string
 }
 
-func (this *DockerEnvironment) IsDockerTls() bool {
-	return IsDockerTls(this.DockerTlsVerify)
+func (d *DockerEnvironment) IsDockerTls() bool {
+	return IsDockerTls(d.DockerTlsVerify)
 }
 
-func (this *DockerEnvironment) EnvStrings() []string {
+func (d *DockerEnvironment) EnvStrings() []string {
 	envStrings := []string{
-		fmt.Sprintf("DOCKER_HOST=%s", this.DockerHost),
+		fmt.Sprintf("DOCKER_HOST=%s", d.DockerHost),
 	}
-	if this.IsDockerTls() {
+	if d.IsDockerTls() {
 		envStrings = append(
 			envStrings,
-			fmt.Sprintf("DOCKER_TLS_VERIFY=%s", this.DockerTlsVerify),
-			fmt.Sprintf("DOCKER_CERT_PATH=%s", this.DockerCertPath),
+			fmt.Sprintf("DOCKER_TLS_VERIFY=%s", d.DockerTlsVerify),
+			fmt.Sprintf("DOCKER_CERT_PATH=%s", d.DockerCertPath),
 		)
 	}
 	return envStrings
 }
 
-func (this *DockerEnvironment) HostVolumeToVolume() map[string]string {
+func (d *DockerEnvironment) HostVolumeToVolume() map[string]string {
 	hostVolumeToVolume := make(map[string]string)
-	if this.IsDockerTls() && this.DockerCertPath != "" {
-		hostVolumeToVolume[this.DockerCertPath] = this.DockerCertPath
+	if d.IsDockerTls() && d.DockerCertPath != "" {
+		hostVolumeToVolume[d.DockerCertPath] = d.DockerCertPath
 	}
-	if strings.HasPrefix(this.DockerHost, "unix") {
-		hostVolumeToVolume[this.DockerHost] = this.DockerHost
+	if strings.HasPrefix(d.DockerHost, "unix") {
+		hostVolumeToVolume[d.DockerHost] = d.DockerHost
 	}
 	if len(hostVolumeToVolume) == 0 {
 		return nil
@@ -50,7 +50,7 @@ func (this *DockerEnvironment) HostVolumeToVolume() map[string]string {
 }
 
 // TODO(pedge): we are assuming the DOCKER_CERT_PATH is a directory within the host
-// regardless of if we are running in a docker container or not, this should actually
+// regardless of if we are running in a docker container or not, d should actually
 // still work but this is not great
 func GetDockerEnvironment() (*DockerEnvironment, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
