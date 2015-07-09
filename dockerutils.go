@@ -149,11 +149,11 @@ func DockerPorts(expose []uint16, ports []string) (map[docker.Port]struct{}, map
 		if err != nil {
 			return nil, nil, err
 		}
-		dockerPort := docker.Port(fmt.Sprintf("%v/tcp", containerPort))
+		dockerPort := docker.Port(fmt.Sprintf("%s/tcp", containerPort))
 		m[dockerPort] = emptyStruct()
 		n[dockerPort] = []docker.PortBinding{
 			docker.PortBinding{
-				HostPort: fmt.Sprintf("%d", hostPort),
+				HostPort: fmt.Sprintf("%s", hostPort),
 			},
 		}
 	}
