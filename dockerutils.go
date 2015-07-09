@@ -132,15 +132,20 @@ func DockerPorts(expose []uint16, ports []string) (map[docker.Port]struct{}, map
 		m[docker.Port(fmt.Sprintf("%v/tcp", port))] = emptyStruct()
 	}
 	for _, port := range ports {
+		var err error
+		var hostPort string
 		split := strings.Split(port, ":")
-		if len(split) != 2 {
-			return nil, nil, fmt.Errorf("invalid port: %s", port)
+		containerPort := split[len(split)-1]
+
+		if len(split) == 2 && split[0] != "" {
+			hostPort = split[0]
+			_, err = strconv.ParseInt(split[0], 10, 64)
+			if err != nil {
+				return nil, nil, err
+			}
 		}
-		hostPort, err := strconv.ParseInt(split[0], 10, 64)
-		if err != nil {
-			return nil, nil, err
-		}
-		containerPort, err := strconv.ParseInt(split[1], 10, 64)
+
+		_, err = strconv.ParseInt(containerPort, 10, 64)
 		if err != nil {
 			return nil, nil, err
 		}
