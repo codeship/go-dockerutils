@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fsouza/go-dockerclient"
+	"github.com/codeship/go-dockerclient"
 )
 
 type DockerEnvironment struct {
