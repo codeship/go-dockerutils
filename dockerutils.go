@@ -40,8 +40,10 @@ func (d *DockerEnvironment) HostVolumeToVolume() map[string]string {
 	if d.IsDockerTls() && d.DockerCertPath != "" {
 		hostVolumeToVolume[d.DockerCertPath] = d.DockerCertPath
 	}
-	if strings.HasPrefix(d.DockerHost, "unix") {
-		hostVolumeToVolume[d.DockerHost] = d.DockerHost
+	unixPrefix := "unix://"
+	if strings.HasPrefix(d.DockerHost, unixPrefix) {
+		host := strings.TrimPrefix(d.DockerHost, unixPrefix)
+		hostVolumeToVolume[host] = host
 	}
 	if len(hostVolumeToVolume) == 0 {
 		return nil
@@ -92,11 +94,6 @@ func NewDockerClientFromEnv(apiVersion string) (*docker.Client, error) {
 func NewDockerClient(dockerEnvironment *DockerEnvironment, apiVersion string) (*docker.Client, error) {
 	dockerHost := dockerEnvironment.DockerHost
 	if dockerEnvironment.IsDockerTls() {
-		parts := strings.SplitN(dockerHost, "://", 2)
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("dockerutils: could not split %s into two parts by ://", dockerHost)
-		}
-		dockerHost = fmt.Sprintf("https://%s", parts[1])
 		dockerCertPath := dockerEnvironment.DockerCertPath
 		cert := filepath.Join(dockerCertPath, "cert.pem")
 		key := filepath.Join(dockerCertPath, "key.pem")
