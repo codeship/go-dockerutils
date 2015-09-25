@@ -22,8 +22,15 @@ func (d *DockerEnvironment) IsDockerTls() bool {
 }
 
 func (d *DockerEnvironment) EnvStrings() []string {
+	host := d.DockerHost
+	parts := strings.Split(host, "://")
+	if len(parts) == 2 {
+		if strings.HasPrefix(parts[0], "http") {
+			host = fmt.Sprintf("tcp://%s", parts[1])
+		}
+	}
 	envStrings := []string{
-		fmt.Sprintf("DOCKER_HOST=%s", d.DockerHost),
+		fmt.Sprintf("DOCKER_HOST=%s", host),
 	}
 	if d.IsDockerTls() {
 		envStrings = append(
