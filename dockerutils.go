@@ -94,6 +94,13 @@ func NewDockerClientFromEnv(apiVersion string) (*docker.Client, error) {
 func NewDockerClient(dockerEnvironment *DockerEnvironment, apiVersion string) (*docker.Client, error) {
 	dockerHost := dockerEnvironment.DockerHost
 	if dockerEnvironment.IsDockerTls() {
+		parts := strings.Split(dockerHost, "://")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("dockerutils: could not split %s into two parts by ://", dockerHost)
+		}
+		if strings.HasPrefix(parts[0], "http") {
+			dockerHost = fmt.Sprintf("tcp://%s", parts[1])
+		}
 		dockerCertPath := dockerEnvironment.DockerCertPath
 		cert := filepath.Join(dockerCertPath, "cert.pem")
 		key := filepath.Join(dockerCertPath, "key.pem")
