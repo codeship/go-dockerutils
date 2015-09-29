@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -227,4 +228,8 @@ func isFileExists(path string) (bool, error) {
 func emptyStruct() struct{} {
 	var str struct{}
 	return str
+}
+
+func DockerPath() (string, error) {
+	return exec.LookPath("docker")
 }
